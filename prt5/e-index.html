@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatat Pengeluaran</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    
+    <div class="container">
+        <h1>Pencatat Pengeluaran</h1>
+
+        <div id="initial-section">
+            <input type="number" id="initialInput" placeholder="Masukkan pengeluaran awal...">
+            <button id="startBtn">Mulai</button>
+        </div>
+
+        <div id="expense-section" style="display: none;">
+            <input type="text" id="pengeluaranInput" placeholder="Masukkan pengeluaran baru...">
+            <button id="tambahBtn">Tambah Pengeluaran</button>
+            <button id="resetBtn">Bersihkan</button>
+        </div>
+
+        <div id="total-display">
+            Total Pengeluaran: <span id="totalValue">0</span>
+        </div>
+    </div>
+
+    <script src="e-index.js"></script>
+    <script>
+        const initialSection = document.getElementById('initial-section');
+        const initialInput = document.getElementById('initialInput');
+        const startBtn = document.getElementById('startBtn');
+        
+        const expenseSection = document.getElementById('expense-section');
+        const pengeluaranInput = document.getElementById('pengeluaranInput');
+        const tambahBtn = document.getElementById('tambahBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        const totalEl = document.getElementById('totalValue');
+
+        let catat; // Variabel untuk menyimpan fungsi closure
+
+        // Event listener untuk tombol "Mulai"
+        startBtn.addEventListener('click', function() {
+            const pengeluaranAwal = parseInt(initialInput.value);
+
+            if (!isNaN(pengeluaranAwal) && pengeluaranAwal >= 0) {
+                // Inisialisasi fungsi pencatat dengan nilai awal
+                catat = pencatatanPengeluaran(pengeluaranAwal);
+                
+                // Tampilkan nilai awal sebagai total pertama
+                totalEl.textContent = pengeluaranAwal;
+
+                // Sembunyikan form awal dan tampilkan form tambah pengeluaran
+                initialSection.style.display = 'none';
+                expenseSection.style.display = 'block';
+            } else {
+                alert('Masukkan angka awal yang valid!');
+            }
+        });
+
+        // Tambahkan event listener ke tombol "Tambah Pengeluaran"
+        tambahBtn.addEventListener('click', function() {
+            const inputValue = pengeluaranInput.value;
+            let totalNilai;
+
+            // Bersihkan input dari tanda kurung
+            const cleanedInput = inputValue.replace(/[()]/g, '');
+            
+            // Pisahkan berdasarkan koma, ubah jadi angka, dan filter yang tidak valid
+            const numbers = cleanedInput.split(',')
+                .map(numStr => parseInt(numStr.trim()))
+                .filter(num => !isNaN(num));
+
+            // Jika tidak ada angka yang valid ditemukan, tampilkan alert
+            if (numbers.length === 0) {
+                alert('Masukkan angka yang valid!');
+                return; // Hentikan eksekusi fungsi
+            }
+
+            // Jumlahkan semua angka yang valid
+            totalNilai = numbers.reduce((sum, current) => sum + current, 0);
+
+            if (!isNaN(totalNilai)) {
+                // Panggil fungsi closure untuk update total
+                const totalBaru = catat(totalNilai);
+
+                // Tampilkan total baru di halaman dan kosongkan input
+                totalEl.textContent = totalBaru;
+                pengeluaranInput.value = '';
+            }
+        });
+
+        // Event listener untuk tombol "Bersihkan"
+        resetBtn.addEventListener('click', function() {
+            // Reset tampilan ke keadaan awal
+            totalEl.textContent = '0';
+            initialInput.value = '';
+            pengeluaranInput.value = '';
+
+            // Tampilkan kembali form awal dan sembunyikan form tambah
+            initialSection.style.display = 'block';
+            expenseSection.style.display = 'none';
+
+            // Hapus referensi ke fungsi closure agar bisa dibuat ulang
+            catat = null;
+        });
+    </script>
+</body>
+</html>
